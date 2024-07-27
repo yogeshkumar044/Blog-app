@@ -1,25 +1,42 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect ,useContext } from 'react';
+import { useDispatch } from 'react-redux';
+import authService from './appwrite/auth';
+import { login, logout } from './store/authSlice';
+import { Footer, Header } from './components';
+import { Outlet } from 'react-router-dom';
+import {StickyProvider} from './Context/header_stick_store';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+
+
+
+
+
+  useEffect(() => {
+    authService.getCurrentUser().then((userData) => {
+      if (userData) {
+        dispatch(login({ userData }));
+      } else {
+        dispatch(logout());
+      } 
+    }).finally(() => setLoading(false));
+  }, [dispatch]);
+
+  return !loading ? (
+    <StickyProvider>
+      <div className="min-h-screen flex flex-wrap content-between bg-gray-400">
+        <div className="w-full block">
+          <Header />
+          <main>
+            <Outlet />
+          </main>
+          <Footer />
+        </div>
+      </div>
+      </StickyProvider>
+  ) : null;
 }
 
 export default App;
